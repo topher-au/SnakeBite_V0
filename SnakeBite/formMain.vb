@@ -291,6 +291,15 @@ Public Class formMain
             Application.DoEvents()
         Loop
 
+        ' remove leftover files
+        Try
+            My.Computer.FileSystem.DeleteFile(dat01File & ".xml")
+            My.Computer.FileSystem.DeleteDirectory(dat01Dir, FileIO.DeleteDirectoryOption.DeleteAllContents)
+            My.Computer.FileSystem.DeleteDirectory("_extr", FileIO.DeleteDirectoryOption.DeleteAllContents)
+        Catch ex As Exception
+
+        End Try
+
         labelInstall.Text = "Installation complete"
         buttonContinue.Text = "Close"
         buttonContinue.Visible = True

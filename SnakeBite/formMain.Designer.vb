@@ -65,15 +65,13 @@ Partial Class formMain
         Me.labelNoUninstall.Name = "labelNoUninstall"
         Me.labelNoUninstall.Size = New System.Drawing.Size(258, 73)
         Me.labelNoUninstall.TabIndex = 1
-        Me.labelNoUninstall.Text = "NOTE:" & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "SnakeBite does not include an singular" & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & " uninstall feature. To uninstall A" &
-    "LL of your mods, please click Uninstall and reverify the Steam data files for th" &
-    "e game."
+        Me.labelNoUninstall.Text = "To uninstall ALL of your mods, please click Remove All on the next page."
         '
         'labelWelcome
         '
-        Me.labelWelcome.Location = New System.Drawing.Point(17, 17)
+        Me.labelWelcome.Location = New System.Drawing.Point(18, 17)
         Me.labelWelcome.Name = "labelWelcome"
-        Me.labelWelcome.Size = New System.Drawing.Size(258, 47)
+        Me.labelWelcome.Size = New System.Drawing.Size(257, 47)
         Me.labelWelcome.TabIndex = 0
         Me.labelWelcome.Text = "Welcome to SnakeBite MGSV Patcher, please follow the instructions below to instal" &
     "l your mod for Metal Gear Solid V: The Phantom Pain."
@@ -224,13 +222,13 @@ Partial Class formMain
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(318, 213)
+        Me.Controls.Add(Me.panelWelcome)
+        Me.Controls.Add(Me.buttonUninstall)
+        Me.Controls.Add(Me.buttonContinue)
         Me.Controls.Add(Me.panelInstall)
         Me.Controls.Add(Me.panelModInfo)
         Me.Controls.Add(Me.panelSelectModfile)
         Me.Controls.Add(Me.panelSelectDatfile)
-        Me.Controls.Add(Me.panelWelcome)
-        Me.Controls.Add(Me.buttonUninstall)
-        Me.Controls.Add(Me.buttonContinue)
         Me.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle
         Me.Margin = New System.Windows.Forms.Padding(2)
