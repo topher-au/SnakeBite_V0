@@ -56,12 +56,15 @@ Public Class formMain
 
         ' Copy file and extract
         My.Computer.FileSystem.CopyFile(Filename, "temp")
+
         Dim unzipper As New Zip.FastZip
         Try
             unzipper.ExtractZip("temp", "_extr", "(.*?)")
         Catch
             Return False
         End Try
+
+        My.Computer.FileSystem.DeleteFile("temp")
         Return True
     End Function
 
@@ -79,14 +82,14 @@ Public Class formMain
         If panelSelectModfile.Visible Then
             Dim modFile = textModFile.Text
             If Not ExtractModfile(modFile) Then
-                MsgBox("Invalid or corrupt mod file")
+                MsgBox("Invalid or corrupt mod file!", vbOKOnly + vbCritical, "SnakeBite")
                 Exit Sub
             End If
             Dim modXml As New XmlDocument
             Try
                 modXml.Load("_extr\mod.xml")
             Catch
-                MsgBox("Unable to load mod metadata")
+                MsgBox("Unable to load mod metadata from modfile", vbOKOnly + vbCritical, "SnakeBite")
                 My.Computer.FileSystem.DeleteDirectory(modFile & "_extr", FileIO.DeleteDirectoryOption.DeleteAllContents)
                 Exit Sub
             End Try
@@ -94,7 +97,7 @@ Public Class formMain
             Dim modGzsData = modXml.SelectSingleNode("//GzsXmlData")
 
             labelModname.Text = modMeta.Item("Name").InnerText
-            labelModAuthor.Text = modMeta.Item("Author").InnerText
+            labelModAuthor.Text = "by " & modMeta.Item("Author").InnerText
             linkModSite.Text = modMeta.Item("Website").InnerText
 
             panelModInfo.Visible = True
@@ -102,8 +105,8 @@ Public Class formMain
             buttonUninstall.Visible = False
         End If
         If panelSelectDatfile.Visible Then
-            If Not My.Computer.FileSystem.FileExists(textMGSVDir.Text & "\MGSVTPP.EXE") Then
-                MsgBox("Unable to find MGSV. Check the folder or rebuild Steam data for the game.", vbOKOnly + vbCritical, "SnakeBite")
+            If Not ValidateMGSV(textMGSVDir.Text) Then
+                MsgBox("Unable to locate required files.", vbOKOnly + vbCritical, "SnakeBite")
                 Exit Sub
             End If
             panelSelectModfile.Visible = True
@@ -138,7 +141,7 @@ Public Class formMain
 
         ' Load xml data
         Dim modXml As New XmlDocument
-        modXml.Load(textModFile.Text & "_extr\mod.xml")
+        modXml.Load("_extr\mod.xml")
         Dim modEntries = modXml.SelectSingleNode("//SnakeBite/GzsXmlData/ArchiveFile/Entries")
 
         ' Load mod hashes
@@ -181,7 +184,8 @@ Public Class formMain
         If overFiles > 0 Then
             Dim overFile = MsgBox("Some files in the mod you have selected may overwrite files for an existing mod. Click OK to install anyway, or cancel to exit SnakeBite.", vbOKCancel + vbExclamation, "SnakeBite")
             If overFile = MsgBoxResult.Cancel Then
-                End
+                labelInstall.Text = "Installation aborted"
+                GoTo endcleanup
             End If
         End If
 
@@ -204,6 +208,9 @@ Public Class formMain
         For Each fpkfile In fpksToMerge
             gzsProcess.StartInfo.Arguments = dat01Dir & fpkfile
             gzsProcess.Start()
+            Do Until gzsProcess.HasExited
+                Application.DoEvents()
+            Loop
             gzsProcess.StartInfo.Arguments = "_extr\" & fpkfile
             gzsProcess.Start()
             Do Until gzsProcess.HasExited
@@ -291,6 +298,9 @@ Public Class formMain
             Application.DoEvents()
         Loop
 
+        labelInstall.Text = "Installation complete"
+
+endcleanup:
         ' remove leftover files
         Try
             My.Computer.FileSystem.DeleteFile(dat01File & ".xml")
@@ -300,15 +310,37 @@ Public Class formMain
 
         End Try
 
-        labelInstall.Text = "Installation complete"
         buttonContinue.Text = "Close"
         buttonContinue.Visible = True
+        Return True
     End Function
 
     Private Sub buttonUninstall_Click(sender As Object, e As EventArgs) Handles buttonUninstall.Click
         Dim youSure = MsgBox("This will remove all SnakeBite mods, are you sure?", vbYesNo + vbQuestion, "SnakeBite")
         If youSure = MsgBoxResult.Yes Then
-
+            If ValidateMGSV(My.Settings.MgsV) Then
+                If My.Computer.FileSystem.FileExists(My.Settings.MgsV & "\master\0\01.dat") Then
+                    My.Computer.FileSystem.DeleteFile(My.Settings.MgsV & "\master\0\01.dat")
+                End If
+                Dim steamRebuild = MsgBox("If the game will not launch, you may need to revalidate the game files. Attempt to revalidate now?", vbYesNo + vbQuestion, "SnakeBite")
+                If steamRebuild = MsgBoxResult.Yes Then
+                    Dim steam = Process.Start("steam://validate/287700")
+                End If
+            Else
+                MsgBox("You need to specify a valid MGSV installation directory first!", vbOKOnly + vbCritical, "SnakeBite")
+            End If
         End If
+    End Sub
+
+    Private Function ValidateMGSV(Dir As String)
+        If My.Computer.FileSystem.FileExists(Dir & "\MGSVTPP.EXE") Then
+            Return True
+        Else
+            Return False
+        End If
+    End Function
+
+    Private Sub linkModSite_LinkClicked(sender As Object, e As LinkLabelLinkClickedEventArgs) Handles linkModSite.LinkClicked
+        Process.Start(linkModSite.Text)
     End Sub
 End Class
